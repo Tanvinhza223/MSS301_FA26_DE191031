@@ -8,10 +8,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final String[] freeResourceUrls = {
+            "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+            "/swagger-resources/**", "/aggregate/**",
+            "/actuator/health", "/actuator/health/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,12 +35,25 @@ public class SecurityConfig {
 
                 // TODO 4.10: quy tac phan quyen
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll() // health check mo
+                        .requestMatchers(freeResourceUrls).permitAll()
                         .anyRequest().authenticated()                       // con lai phai co JWT
                 )
+
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // TODO 4.10: Gateway la OAuth2 Resource Server, xac thuc bang JWT
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+        configuration.setAllowedHeaders(List.of("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
