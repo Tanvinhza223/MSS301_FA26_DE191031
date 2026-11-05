@@ -1,0 +1,30 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: ms-watch
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=DBWatch;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: ${DB_PASSWORD:YourStrong@Password123}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  cloud:
+    openfeign:
+      client:
+        config:
+          brand-service:
+            connect-timeout: 3000
+            read-timeout: 5000
+brand-service:
+  url: ${BRAND_SERVICE_URL:http://localhost:8082}
+saga:
+  fault-injection:
+    enabled: ${SAGA_FAULT_INJECTION:true}
+  compensation:
+    max-attempts: 3
+
